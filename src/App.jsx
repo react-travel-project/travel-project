@@ -1,130 +1,221 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  // 처음 실행 시 localStorage에 저장된 데이터가 있으면 가져오고,
-  // 없으면 더미 데이터를 저장해서 사용
-  const [data, setData] = useState(() => {
-    const savedData = localStorage.getItem("travel");
+  const initialData = [
+    {
+      id: 1,
+      name: "에펠탑",
+      country: "프랑스",
+      city: "파리",
+      date: "2024-07-15",
+      image:
+        "https://i.namu.wiki/i/yF485NWCazWq7Zd52f5DzchphPkZ4VGVZXkx57AHIygI_GHgHLQnAa2zVJXZ_hxnid6NA09bKhxSc2FeLguNzw.webp",
+      rating: 5,
+      memo: "정말 아름다웠어요!",
+      createdAt: "2024-07-20T10:30:00",
+    },
+  ];
 
-    if (savedData) {
-      return JSON.parse(savedData);
-    }
-
-    const defaultData = {
-      id: Date.now(),
-      여행지이름: Date.now().toString(),
-      국가: Date.now().toString(),
-      도시: Date.now().toString(),
-      방문날짜: new Date().toISOString().split("T")[0],
-      사진URL: "https://via.placeholder.com/150",
-      평점: 5,
-      여행지메모: "정말 아름다웠어요!",
-    };
-
-    localStorage.setItem("travel", JSON.stringify(defaultData));
-
-    return defaultData;
+  const [countries, setCountries] = useState(() => {
+    const saved = localStorage.getItem("countries");
+    return saved ? JSON.parse(saved) : initialData;
   });
 
-  // Update
-  const handleUpdate = () => {
-    const updatedData = {
-      ...data,
-    };
+  const [formData, setFormData] = useState({
+    name: "",
+    country: "",
+    city: "",
+    date: "",
+    image: "",
+    rating: 5,
+    memo: "",
+  });
 
-    setData(updatedData);
+  const [editingId, setEditingId] = useState(null);
 
-    localStorage.setItem("travel", JSON.stringify(updatedData));
+  useEffect(() => {
+    localStorage.setItem("countries", JSON.stringify(countries));
+  }, [countries]);
 
-    alert("수정되었습니다.");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      country: "",
+      city: "",
+      date: "",
+      image: "",
+      rating: 5,
+      memo: "",
+    });
+
+    setEditingId(null);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (editingId === null) {
+      const newCountry = {
+        id: Date.now(),
+        ...formData,
+        createdAt: new Date().toISOString(),
+      };
+
+      setCountries([...countries, newCountry]);
+    } else {
+      setCountries(
+        countries.map((item) =>
+          item.id === editingId ? { ...item, ...formData } : item
+        )
+      );
+    }
+
+    resetForm();
+  };
+
+  const handleDelete = (id) => {
+    setCountries(countries.filter((item) => item.id !== id));
+
+    if (editingId === id) {
+      resetForm();
+    }
+  };
+
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+
+    setFormData({
+      name: item.name,
+      country: item.country,
+      city: item.city,
+      date: item.date,
+      image: item.image || "",
+      rating: item.rating || 5,
+      memo: item.memo || "",
+    });
   };
 
   return (
     <div className="App">
-      <h1>게시글 수정</h1>
+      <h1>여행지 관리</h1>
 
-      <div>
-        <label>
-          여행지 이름:
-          <input
-            type="text"
-            value={data.여행지이름}
-            onChange={(e) =>
-              setData({ ...data, 여행지이름: e.target.value })
-            }
-          />
-        </label>
-      </div>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="name"
+          placeholder="여행지"
+          value={formData.name}
+          onChange={handleChange}
+        />
 
-      <div>
-        <label>
-          국가:
-          <input
-            type="text"
-            value={data.국가}
-            onChange={(e) => setData({ ...data, 국가: e.target.value })}
-          />
-        </label>
-      </div>
+        <input
+          type="text"
+          name="country"
+          placeholder="국가"
+          value={formData.country}
+          onChange={handleChange}
+        />
 
-      <div>
-        <label>
-          도시:
-          <input
-            type="text"
-            value={data.도시}
-            onChange={(e) => setData({ ...data, 도시: e.target.value })}
-          />
-        </label>
-      </div>
+        <input
+          type="text"
+          name="city"
+          placeholder="도시"
+          value={formData.city}
+          onChange={handleChange}
+        />
 
-      <div>
-        <label>
-          방문 날짜:
-          <input
-            type="date"
-            value={data.방문날짜}
-            onChange={(e) => setData({ ...data, 방문날짜: e.target.value })}
-          />
-        </label>
-      </div>
+        <input
+          type="date"
+          name="date"
+          value={formData.date}
+          onChange={handleChange}
+        />
 
-      <div>
-        <label>
-          사진 URL:
-          <input
-            type="text"
-            value={data.사진URL}
-            onChange={(e) => setData({ ...data, 사진URL: e.target.value })}
-          />
-        </label>
-      </div>
+        <input
+          type="text"
+          name="image"
+          placeholder="사진 URL"
+          value={formData.image}
+          onChange={handleChange}
+        />
 
-      <div>
-        <label>
-          평점:
-          <input
-            type="number"
-            min="1"
-            max="5"
-            value={data.평점}
-            onChange={(e) => setData({ ...data, 평점: e.target.value })}
-          />
-        </label>
-      </div>
+        <input
+          type="number"
+          min="1"
+          max="5"
+          name="rating"
+          value={formData.rating}
+          onChange={handleChange}
+        />
 
-      <div>
-        <label>
-          여행지 메모:
-          <textarea
-            value={data.여행지메모}
-            onChange={(e) => setData({ ...data, 여행지메모: e.target.value })}
-          />
-        </label>
-      </div>
+        <textarea
+          name="memo"
+          placeholder="메모"
+          value={formData.memo}
+          onChange={handleChange}
+        />
 
-      <button onClick={handleUpdate}>수정</button>
+        <button type="submit">
+          {editingId ? "수정 완료" : "추가"}
+        </button>
+
+        {editingId && (
+          <button type="button" onClick={resetForm}>
+            취소
+          </button>
+        )}
+      </form>
+
+      <hr />
+
+      {countries.map((item) => (
+        <div
+          key={item.id}
+          style={{
+            border: "1px solid #ddd",
+            padding: "15px",
+            marginBottom: "20px",
+          }}
+        >
+          <h2>{item.name}</h2>
+
+          <p>
+            {item.country} / {item.city}
+          </p>
+
+          <p>{item.date}</p>
+
+          {item.image && (
+            <img
+              src={item.image}
+              alt={item.name}
+              width="250"
+            />
+          )}
+
+          <p>⭐ {item.rating}</p>
+
+          <p>{item.memo}</p>
+
+          <button onClick={() => handleEdit(item)}>
+            수정
+          </button>
+
+          <button onClick={() => handleDelete(item.id)}>
+            삭제
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
