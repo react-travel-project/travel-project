@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import TravelForm from './components/TravelForm';
+import Header from './components/Header';
+import TravelList from './components/TravelList';
 
 function App() {
+  const [travels, setTravels] = useState([])
+
+  // 총 국가 수 계산
+  const totalCountries = new Set(travels.map(t => t.country)).size
+  
   const initialData = [
     {
       id: 1,
@@ -107,6 +115,8 @@ function App() {
 
   return (
     <div className="App">
+      <Header totalTrips={travels.length} totalCountries={totalCountries} />
+    
       <h1>여행지 관리</h1>
 
       <form onSubmit={handleSubmit}>
