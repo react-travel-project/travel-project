@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import './App.css'
-import Header from './components/Header'
+import { useState } from 'react';
+import './App.css';
+import TravelForm from './components/TravelForm';
 
 function App() {
   const [travels, setTravels] = useState([])
